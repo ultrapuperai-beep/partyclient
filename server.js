@@ -20,12 +20,21 @@ wss.on('connection', (ws) => {
                 currentParty = msg.partyId;
                 playerName = msg.playerName;
                 
-                if (!parties.has(currentParty)) {
+                const isNewParty = !parties.has(currentParty);
+                
+                if (isNewParty) {
                     parties.set(currentParty, new Map());
                 }
                 
                 parties.get(currentParty).set(playerName, ws);
                 console.log(`${playerName} joined party ${currentParty}`);
+                
+                // Send join confirmation
+                ws.send(JSON.stringify({
+                    type: 'join_confirm',
+                    isNewParty: isNewParty,
+                    partyId: currentParty
+                }));
                 
                 broadcast(currentParty, {
                     type: 'player_joined',
